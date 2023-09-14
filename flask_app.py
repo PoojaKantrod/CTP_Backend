@@ -553,7 +553,7 @@ def format_profiles(profiles):
 def get_profiles():
     cursor = db_connection.cursor(dictionary=True)
     try:
-        query = "SELECT * FROM Wordpress_profiles"
+        query = "SELECT * FROM Wordpress_profile"
         cursor.execute(query)
         profiles = cursor.fetchall()
     except Exception as e:
@@ -572,7 +572,7 @@ def get_profiles():
 def get_profile(uniqueId):
     cursor = db_connection.cursor(dictionary=True)
     try:
-        query = "SELECT * FROM Wordpress_profiles WHERE uniqueId = %s"
+        query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
         cursor.execute(query, (uniqueId,))
         profile = cursor.fetchone()
     except Exception as e:
@@ -591,4 +591,4 @@ def get_profile(uniqueId):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
