@@ -4,6 +4,25 @@
 
 In the `MySQL_Database` folder, you'll find mock databases and tables, including a `wordpress_profile` table.
 
+## Setting up Conda
+Run enviroment.yml file using following command to setup conda for this project.
+``` 
+conda env create --file environment.yml
+```
+
+When installing new packages to the conda env, please export them using the following command for other developers
+```
+conda env export --from-history --name ctpbackend > environment.yml
+```
+
+## Setting up your .env file
+Use the following command in your project terminal to copy paste .env.example file and create .env file
+```
+cp .env.example .env
+```
+
+Please go to .env file and add you local configuration or db server config if you have that.
+
 ## Running the Flask Application
 
 To use the Flask application for creating an API for student profiles, follow these steps:

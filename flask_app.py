@@ -2,7 +2,31 @@ from flask import Flask, Response
 import mysql.connector
 import json
 
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
+
+db_host = os.environ.get("DB_HOST")
+db_port = os.environ.get("DB_PORT")
+db_user = os.environ.get("DB_USER")
+db_password = os.environ.get("DB_PASSWORD")
+db_database = os.environ.get("DB_DATABASE")
+
+db_connection = mysql.connector.connect(
+    host=db_host,
+    port=db_port,
+    user=db_user,
+    password=db_password,
+    database=db_database,
+    auth_plugin='mysql_native_password'
+)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return "invalid request", 404
 
 def format_profiles(profiles):
     formatted_profiles = []
@@ -527,59 +551,35 @@ def format_profiles(profiles):
 
 @app.route('/api/profiles', methods=['GET'])
 def get_profiles():
-    db_host = '127.0.0.1'
-    db_port = 3306
-    db_user = 'root'
-    db_password = 'Scorpio@2024'
-    db_database = 'mock_data'
-
-    db_connection = mysql.connector.connect(
-        host=db_host,
-        port=db_port,
-        user=db_user,
-        password=db_password,
-        database=db_database,
-        auth_plugin='mysql_native_password'
-    )
-
     cursor = db_connection.cursor(dictionary=True)
-    query = "SELECT * FROM Wordpress_profile"
-    cursor.execute(query)
-    profiles = cursor.fetchall()
-    cursor.close()
-    db_connection.close()
-    
-    
+    try:
+        query = "SELECT * FROM Wordpress_profile"
+        cursor.execute(query)
+        profiles = cursor.fetchall()
+    except Exception as e:
+        response = Response({"error":e}, content_type='application/json')
+    finally:
+        cursor.close()
+        
     formatted_profiles = format_profiles(profiles)
     response_data = json.dumps(formatted_profiles, indent=2)
     response = Response(response_data, content_type='application/json')
+    
     return response
 
 
 @app.route('/api/profile/<uniqueId>', methods=['GET'])
 def get_profile(uniqueId):
-    db_host = '127.0.0.1'
-    db_port = 3306
-    db_user = 'root'
-    db_password = 'Scorpio@2024'
-    db_database = 'mock_data'
-
-    db_connection = mysql.connector.connect(
-        host=db_host,
-        port=db_port,
-        user=db_user,
-        password=db_password,
-        database=db_database,
-        auth_plugin='mysql_native_password'
-    )
-
     cursor = db_connection.cursor(dictionary=True)
-    query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
-    cursor.execute(query, (uniqueId,))
-    profile = cursor.fetchone()
-    cursor.close()
-    db_connection.close()
-    
+    try:
+        query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
+        cursor.execute(query, (uniqueId,))
+        profile = cursor.fetchone()
+    except Exception as e:
+        return "Error occured", 501
+    finally:
+        cursor.close()
+        
     if profile:
         formatted_profile = format_profiles([profile])[0]
         response_data = json.dumps(formatted_profile, indent=2)
@@ -591,4 +591,4 @@ def get_profile(uniqueId):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001, debug=True)

@@ -1,0 +1,9 @@
+name: ctpbackend
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - pip
+  - flask
+  - mysql-connector-python
+  - python-dotenv
