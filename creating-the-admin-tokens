@@ -1,0 +1,41 @@
+from flask import Flask, request, jsonify
+import uuid
+from functools import wraps
+app = Flask(__name__)
+# Admin user and password
+ADMIN_USERS = {
+   'admin1': 'secretpassword'
+}
+# Mapping of admin token to admin username
+ADMIN_TOKENS = {}
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('X-Admin-Token')
+        if token not in ADMIN_TOKENS:
+            return jsonify({'message': 'Invalid admin token'}), 401
+        return f(*args, **kwargs)
+    return decorated
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username in ADMIN_USERS and password == ADMIN_USERS[username]:
+        token = uuid.uuid4().hex
+        ADMIN_TOKENS[token] = username
+        return jsonify({'token': token})
+    return jsonify({'message': 'Invalid credentials'}), 401
+@app.route('/admin/profiles')
+@admin_required
+def admin_profiles():
+    # Admin logic here
+    pass
+# Original API routes
+@app.route('/api/profiles')
+def profiles():
+   pass
+@app.route('/api/profile/<id>')
+def get_profile(id):
+   pass
+if __name__ == '__main__':
+    app.run()
