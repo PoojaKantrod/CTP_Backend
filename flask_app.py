@@ -4,6 +4,7 @@ import json
 
 import os
 
+from iconMapping import getIconUrl
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -37,27 +38,24 @@ def format_profiles(profiles):
             "firstName": profile["firstName"],
             "middleName": profile["middleName"],
             "lastName": profile["lastName"],
-            "orderNumber": profile["orderNumber"],
-            "emailUsed": profile["emailUsed"],
-            "birthDate": profile["birthDate"],
             "bannerPhoto": profile["bannerPhoto"],
             "usOrCanadianOrInternationalSchool": profile["usOrCanadianOrInternationalSchool"],
             "cannotFindSchoolPleaseProvideIt": profile["cannotFindSchoolPleaseProvideIt"],
             "Degree": profile["Degree"],
-            "graduationYear": profile["graduationYear"],
-            "usUndergradSchool": profile["usUndergradSchool"],
             "aboutMe": profile["aboutMe"],
             "myAcademics": profile["myAcademics"],
             "myExtracurricularActivities": profile["myExtracurricularActivities"],
             "myAthletics": profile["myAthletics"],
             "myPlansForFuture": profile["myPlansForFuture"],
             "myJobsInternships": profile["myJobsInternships"],
+            "myHonorsAwards": profile["myHonorsAwards"],
             "mySkills": profile["mySkills"],
             "myLanguages": profile["myLanguages"],
-            "myHonorsAwards": profile["myHonorsAwards"],
             "favoriteBook": profile["favoriteBook"],
             "favoriteQuote": profile["favoriteQuote"],
-            "favoriteCharitableCauses": profile["favoriteCharitableCauses"],
+            "myFavoritePodcasts": profile["myFavoritePodcasts"],
+            "placesIHaveLived": profile["placesIHaveLived"],
+            "placesIHaveTraveled": profile["placesIHaveTraveled"],
             "regionsAndCharitableNeedsICareAbout": profile["regionsAndCharitableNeedsICareAbout"],
             "metropolitanAreasWhoseCharitableNeedsICareAbout": profile["metropolitanAreasWhoseCharitableNeedsICareAbout"],
             "ethnicGroupsWhoseCharitableNeedsICareAbout": profile["ethnicGroupsWhoseCharitableNeedsICareAbout"],
@@ -68,10 +66,7 @@ def format_profiles(profiles):
             "myFundraisingActivities": profile["myFundraisingActivities"],
             "charitableWishlists": profile["charitableWishlists"],
             "myThoughtsOnMakingaDifference": profile["myThoughtsOnMakingaDifference"],
-            "placesIHaveLived": profile["placesIHaveLived"],
-            "placesIHaveTraveled": profile["placesIHaveTraveled"],
-            "myFavoritePodcasts": profile["myFavoritePodcasts"],
-            
+            "favoriteCharitableCauses": profile["favoriteCharitableCauses"],
         }
         
         
@@ -218,28 +213,28 @@ def format_profiles(profiles):
         if profile["yourOwnWebsite"]:
             social_media_icons.append({
                 "platform": "yourOwnWebsite",
-                "iconUrl": "yourOwnWebsite icon URL",
+                "iconUrl": getIconUrl("yourOwnWebsite"),
                 "url": profile["yourOwnWebsite"]
             })
         
         if profile["yourBlog"]:
             social_media_icons.append({
                 "platform": "yourBlog",
-                "iconUrl": "yourBlog icon URL",
+                "iconUrl": getIconUrl("yourBlog"),
                 "url": profile["yourBlog"]
             })
             
         if profile["LinkedIn"]:
             social_media_icons.append({
                 "platform": "LinkedIn",
-                "iconUrl": "LinkedIn icon URL",
+                "iconUrl": getIconUrl("LinkedIn"),
                 "url": profile["LinkedIn"]
             })
             
         if profile["Instagram"]:
             social_media_icons.append({
                 "platform": "Instagram",
-                "iconUrl": "Instagram icon URL",
+                "iconUrl": getIconUrl("Instagram"),
                 "url": profile["Instagram"]
             })
             
@@ -247,14 +242,14 @@ def format_profiles(profiles):
         if profile["Twitter"]:
             social_media_icons.append({
                 "platform": "Twitter",
-                "iconUrl": "Twitter icon URL",
+                "iconUrl": getIconUrl("Twitter"),
                 "url": profile["Twitter"]
             })
             
         if profile["Facebook"]:
             social_media_icons.append({
                 "platform": "Facebook",
-                "iconUrl": "Facebook icon URL",
+                "iconUrl": getIconUrl("Facebook"),
                 "url": profile["Facebook"]
             })
             
@@ -262,203 +257,203 @@ def format_profiles(profiles):
         if profile["GooglePlus"]:
             social_media_icons.append({
                 "platform": "GooglePlus",
-                "iconUrl": "GooglePlus icon URL",
+                "iconUrl": getIconUrl("GooglePlus"),
                 "url": profile["GooglePlus"]
             })
             
         if profile["Pinterest"]:
             social_media_icons.append({
                 "platform": "Pinterest",
-                "iconUrl": "Pinterest icon URL",
+                "iconUrl": getIconUrl("Pinterest"),
                 "url": profile["Pinterest"]
             })
             
         if profile["Youtube"]:
             social_media_icons.append({
                 "platform": "Youtube",
-                "iconUrl": "Youtube icon URL",
+                "iconUrl": getIconUrl("Youtube"),
                 "url": profile["Youtube"]
             })
             
         if profile["Flickr"]:
             social_media_icons.append({
                 "platform": "Flickr",
-                "iconUrl": "Flickr icon URL",
+                "iconUrl": getIconUrl("Flickr"),
                 "url": profile["Flickr"]
             })
             
         if profile["Behance"]:
             social_media_icons.append({
                 "platform": "Behance",
-                "iconUrl": "Behance icon URL",
+                "iconUrl": getIconUrl("Behance"),
                 "url": profile["Behance"]
             })
             
         if profile["Tumblr"]:
             social_media_icons.append({
                 "platform": "Tumblr",
-                "iconUrl": "Tumblr icon URL",
+                "iconUrl": getIconUrl("Tumblr"),
                 "url": profile["Tumblr"]
             })
             
         if profile["Etsy"]:
             social_media_icons.append({
                 "platform": "Etsy",
-                "iconUrl": "Etsy icon URL",
+                "iconUrl": getIconUrl("Etsy"),
                 "url": profile["Etsy"]
             })
             
         if profile["WayUp"]:
             social_media_icons.append({
                 "platform": "WayUp",
-                "iconUrl": "WayUp icon URL",
+                "iconUrl": getIconUrl("WayUp"),
                 "url": profile["WayUp"]
             })
             
         if profile["academiaEdu"]:
             social_media_icons.append({
                 "platform": "academiaEdu",
-                "iconUrl": "academiaEdu icon URL",
+                "iconUrl": getIconUrl("academiaEdu"),
                 "url": profile["academiaEdu"]
             })
             
         if profile["Researchgate"]:
             social_media_icons.append({
                 "platform": "Researchgate",
-                "iconUrl": "Researchgate icon URL",
+                "iconUrl": getIconUrl("Researchgate"),
                 "url": profile["Researchgate"]
             })
             
         if profile["Digication"]:
             social_media_icons.append({
                 "platform": "Digication",
-                "iconUrl": "Digication icon URL",
+                "iconUrl": getIconUrl("Digication"),
                 "url": profile["Digication"]
             })
             
         if profile["Issuu"]:
             social_media_icons.append({
                 "platform": "Issuu",
-                "iconUrl": "Issuu icon URL",
+                "iconUrl": getIconUrl("Issuu"),
                 "url": profile["Issuu"]
             })
             
         if profile["VSCO"]:
             social_media_icons.append({
                 "platform": "VSCO",
-                "iconUrl": "VSCO icon URL",
+                "iconUrl": getIconUrl("VSCO"),
                 "url": profile["VSCO"]
             })
             
         if profile["500px"]:
             social_media_icons.append({
                 "platform": "500px",
-                "iconUrl": "500px icon URL",
+                "iconUrl": getIconUrl("500px"),
                 "url": profile["500px"]
             })
             
         if profile["helperHelper"]:
             social_media_icons.append({
                 "platform": "helperHelper",
-                "iconUrl": "helperHelper icon URL",
+                "iconUrl": getIconUrl("helperHelper"),
                 "url": profile["helperHelper"]
             })
             
         if profile["Github"]:
             social_media_icons.append({
                 "platform": "Github",
-                "iconUrl": "Github icon URL",
+                "iconUrl": getIconUrl("Github"),
                 "url": profile["Github"]
             })
             
         if profile["projectsThatMatterorg"]:
             social_media_icons.append({
                 "platform": "projectsThatMatterorg",
-                "iconUrl": "projectsThatMatterorg icon URL",
+                "iconUrl": getIconUrl("projectsThatMatterorg"),
                 "url": profile["projectsThatMatterorg"]
             })
             
         if profile["Quora"]:
             social_media_icons.append({
                 "platform": "Quora",
-                "iconUrl": "Quora icon URL",
+                "iconUrl": getIconUrl("Quora"),
                 "url": profile["Quora"]
             })
             
         if profile["TikTok"]:
             social_media_icons.append({
                 "platform": "TikTok",
-                "iconUrl": "TikTok icon URL",
+                "iconUrl": getIconUrl("TikTok"),
                 "url": profile["TikTok"]
             })
             
         if profile["Strava"]:
             social_media_icons.append({
                 "platform": "Strava",
-                "iconUrl": "Strava icon URL",
+                "iconUrl": getIconUrl("Strava"),
                 "url": profile["Strava"]
             })
             
         if profile["sportsRecruits"]:
             social_media_icons.append({
                 "platform": "sportsRecruits",
-                "iconUrl": "sportsRecruits icon URL",
+                "iconUrl": getIconUrl("sportsRecruits"),
                 "url": profile["sportsRecruits"]
             })
             
         if profile["mileSplit"]:
             social_media_icons.append({
                 "platform": "mileSplit",
-                "iconUrl": "mileSplit icon URL",
+                "iconUrl": getIconUrl("mileSplit"),
                 "url": profile["mileSplit"]
             })
             
         if profile["prestoSports"]:
             social_media_icons.append({
                 "platform": "prestoSports",
-                "iconUrl": "prestoSports icon URL",
+                "iconUrl": getIconUrl("prestoSports"),
                 "url": profile["prestoSports"]
             })
             
         if profile["Harri"]:
             social_media_icons.append({
                 "platform": "Harri",
-                "iconUrl": "Harri icon URL",
+                "iconUrl": getIconUrl("Harri"),
                 "url": profile["Harri"]
             })
             
         if profile["eliteProspects"]:
             social_media_icons.append({
                 "platform": "eliteProspects",
-                "iconUrl": "eliteProspects icon URL",
+                "iconUrl": getIconUrl("eliteProspects"),
                 "url": profile["eliteProspects"]
             })
         
         if profile["Hudl"]:
             social_media_icons.append({
                 "platform": "Hudl",
-                "iconUrl": "Hudl icon URL",
+                "iconUrl": getIconUrl("Hudl"),
                 "url": profile["Hudl"]
             })
             
         if profile["maxPreps"]:
             social_media_icons.append({
                 "platform": "maxPreps",
-                "iconUrl": "maxPreps icon URL",
+                "iconUrl": getIconUrl("maxPreps"),
                 "url": profile["maxPreps"]
             })
             
         if profile["NCSA"]:
             social_media_icons.append({
                 "platform": "NCSA",
-                "iconUrl": "NCSA icon URL",
+                "iconUrl": getIconUrl("NCSA"),
                 "url": profile["NCSA"]
             })
             
         if profile["athleticNet"]:
             social_media_icons.append({
                 "platform": "athleticNet",
-                "iconUrl": "athleticNet icon URL",
+                "iconUrl": getIconUrl("athleticNet"),
                 "url": profile["athleticNet"]
             })
             
@@ -466,42 +461,42 @@ def format_profiles(profiles):
         if profile["medium"]:
             social_media_icons.append({
                 "platform": "medium",
-                "iconUrl": "medium icon URL",
+                "iconUrl": getIconUrl("medium"),
                 "url": profile["medium"]
             })
             
         if profile["twitch"]:
             social_media_icons.append({
                 "platform": "twitch",
-                "iconUrl": "twitch icon URL",
+                "iconUrl": getIconUrl("twitch"),
                 "url": profile["twitch"]
             })
             
         if profile["soundCloud"]:
             social_media_icons.append({
                 "platform": "soundCloud",
-                "iconUrl": "soundCloud icon URL",
+                "iconUrl": getIconUrl("soundCloud"),
                 "url": profile["soundCloud"]
             })
             
         if profile["artStation"]:
             social_media_icons.append({
                 "platform": "artStation",
-                "iconUrl": "artStation icon URL",
+                "iconUrl": getIconUrl("artStation"),
                 "url": profile["artStation"]
             })
             
         if profile["firstRobotics"]:
             social_media_icons.append({
                 "platform": "firstRobotics",
-                "iconUrl": "firstRobotics icon URL",
+                "iconUrl": getIconUrl("firstRobotics"),
                 "url": profile["firstRobotics"]
             })
             
         if profile["Patreon"]:
             social_media_icons.append({
                 "platform": "Patreon",
-                "iconUrl": "Patreon icon URL",
+                "iconUrl": getIconUrl("Patreon"),
                 "url": profile["Patreon"]
             })
             
@@ -509,21 +504,21 @@ def format_profiles(profiles):
         if profile["soundClick"]:
             social_media_icons.append({
                 "platform": "soundClick",
-                "iconUrl": "soundClick icon URL",
+                "iconUrl": getIconUrl("soundClick"),
                 "url": profile["soundClick"]
             })
             
         if profile["bandcamp"]:
             social_media_icons.append({
                 "platform": "bandcamp",
-                "iconUrl": "bandcamp icon URL",
+                "iconUrl": getIconUrl("bandcamp"),
                 "url": profile["bandcamp"]
             })
             
         if profile["vexRobotics"]:
             social_media_icons.append({
                 "platform": "vexRobotics",
-                "iconUrl": "vexRobotics icon URL",
+                "iconUrl": getIconUrl("vexRobotics"),
                 "url": profile["vexRobotics"]
             })
             
@@ -531,7 +526,7 @@ def format_profiles(profiles):
         if profile["Rivals"]:
             social_media_icons.append({
                 "platform": "Rivals",
-                "iconUrl": "Rivals icon URL",
+                "iconUrl": getIconUrl("Rivals"),
                 "url": profile["Rivals"]
             })
             
@@ -539,7 +534,7 @@ def format_profiles(profiles):
         if profile["swimCloud"]:
             social_media_icons.append({
                 "platform": "swimCloud",
-                "iconUrl": "swimCloud icon URL",
+                "iconUrl": getIconUrl("swimCloud"),
                 "url": profile["swimCloud"]
             })
 
