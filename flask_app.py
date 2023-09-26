@@ -1,10 +1,9 @@
-from flask import Flask, Response
+from flask import Flask, Response, request, jsonify
 import mysql.connector
 import json
-
 import os
-
 from dotenv import load_dotenv
+from mysql.connector import pooling
 load_dotenv()
 
 app = Flask(__name__)
@@ -15,7 +14,10 @@ db_user = os.environ.get("DB_USER")
 db_password = os.environ.get("DB_PASSWORD")
 db_database = os.environ.get("DB_DATABASE")
 
-db_connection = mysql.connector.connect(
+# Create a connection pool
+connection_pool = pooling.MySQLConnectionPool(
+    pool_name="mypool",
+    pool_size=10,
     host=db_host,
     port=db_port,
     user=db_user,
@@ -31,175 +33,82 @@ def page_not_found(error):
 def format_profiles(profiles):
     formatted_profiles = []
 
+    # Define field mappings
+    field_mappings = {
+        "uniqueId": "uniqueId",
+        "firstName": "firstName",
+        "middleName": "middleName",
+        "lastName": "lastName",
+        "orderNumber": "orderNumber",
+        "emailUsed": "emailUsed",
+        "birthDate": "birthDate",
+        "bannerPhoto": "bannerPhoto",
+        "usOrCanadianOrInternationalSchool": "usOrCanadianOrInternationalSchool",
+        "cannotFindSchoolPleaseProvideIt": "cannotFindSchoolPleaseProvideIt",
+        "Degree": "Degree",
+        "graduationYear": "graduationYear",
+            "usUndergradSchool":"usUndergradSchool",
+            "aboutMe": "aboutMe",
+            "myAcademics": "myAcademics",
+            "myExtracurricularActivities":"myExtracurricularActivities",
+            "myAthletics": "myAthletics",
+            "myPlansForFuture": "myPlansForFuture",
+            "myJobsInternships": "myJobsInternships",
+            "mySkills": "mySkills",
+            "myLanguages": "myLanguages",
+            "myHonorsAwards": "myHonorsAwards",
+            "favoriteBook": "favoriteBook",
+            "favoriteQuote": "favoriteQuote",
+            "favoriteCharitableCauses": "favoriteCharitableCauses",
+            "regionsAndCharitableNeedsICareAbout": "regionsAndCharitableNeedsICareAbout",
+            "metropolitanAreasWhoseCharitableNeedsICareAbout": "metropolitanAreasWhoseCharitableNeedsICareAbout",
+            "ethnicGroupsWhoseCharitableNeedsICareAbout": "ethnicGroupsWhoseCharitableNeedsICareAbout",
+            "religiousGroupsWhoseCharitableNeedsICareAbout":"religiousGroupsWhoseCharitableNeedsICareAbout",
+            "howMyLifestyleIsMakingtheWorldBetterPlace": "howMyLifestyleIsMakingtheWorldBetterPlace",
+            "favoriteNonprofitOrganizations.": "favoriteNonprofitOrganizations.",
+            "volunteeringCommunityService": "volunteeringCommunityService",
+            "myFundraisingActivities": "myFundraisingActivities",
+            "charitableWishlists": "charitableWishlists",
+            "myThoughtsOnMakingaDifference": "myThoughtsOnMakingaDifference",
+            "placesIHaveLived": "placesIHaveLived",
+            "placesIHaveTraveled": "placesIHaveTraveled",
+            "myFavoritePodcasts": "myFavoritePodcasts",
+    }
+
     for profile in profiles:
-        formatted_profile = {
-            "uniqueId": profile["uniqueId"],
-            "firstName": profile["firstName"],
-            "middleName": profile["middleName"],
-            "lastName": profile["lastName"],
-            "orderNumber": profile["orderNumber"],
-            "emailUsed": profile["emailUsed"],
-            "birthDate": profile["birthDate"],
-            "bannerPhoto": profile["bannerPhoto"],
-            "usOrCanadianOrInternationalSchool": profile["usOrCanadianOrInternationalSchool"],
-            "cannotFindSchoolPleaseProvideIt": profile["cannotFindSchoolPleaseProvideIt"],
-            "Degree": profile["Degree"],
-            "graduationYear": profile["graduationYear"],
-            "usUndergradSchool": profile["usUndergradSchool"],
-            "aboutMe": profile["aboutMe"],
-            "myAcademics": profile["myAcademics"],
-            "myExtracurricularActivities": profile["myExtracurricularActivities"],
-            "myAthletics": profile["myAthletics"],
-            "myPlansForFuture": profile["myPlansForFuture"],
-            "myJobsInternships": profile["myJobsInternships"],
-            "mySkills": profile["mySkills"],
-            "myLanguages": profile["myLanguages"],
-            "myHonorsAwards": profile["myHonorsAwards"],
-            "favoriteBook": profile["favoriteBook"],
-            "favoriteQuote": profile["favoriteQuote"],
-            "favoriteCharitableCauses": profile["favoriteCharitableCauses"],
-            "regionsAndCharitableNeedsICareAbout": profile["regionsAndCharitableNeedsICareAbout"],
-            "metropolitanAreasWhoseCharitableNeedsICareAbout": profile["metropolitanAreasWhoseCharitableNeedsICareAbout"],
-            "ethnicGroupsWhoseCharitableNeedsICareAbout": profile["ethnicGroupsWhoseCharitableNeedsICareAbout"],
-            "religiousGroupsWhoseCharitableNeedsICareAbout": profile["religiousGroupsWhoseCharitableNeedsICareAbout"],
-            "howMyLifestyleIsMakingtheWorldBetterPlace": profile["howMyLifestyleIsMakingtheWorldBetterPlace"],
-            "favoriteNonprofitOrganizations.": profile["favoriteNonprofitOrganizations."],
-            "volunteeringCommunityService": profile["volunteeringCommunityService"],
-            "myFundraisingActivities": profile["myFundraisingActivities"],
-            "charitableWishlists": profile["charitableWishlists"],
-            "myThoughtsOnMakingaDifference": profile["myThoughtsOnMakingaDifference"],
-            "placesIHaveLived": profile["placesIHaveLived"],
-            "placesIHaveTraveled": profile["placesIHaveTraveled"],
-            "myFavoritePodcasts": profile["myFavoritePodcasts"],
-            
-        }
-        
-        
+        formatted_profile = {key: profile.get(value, None) for key, value in field_mappings.items()}
+
         organization = []
-        if profile["doYouBelongToGreek"]:
-            organizations = profile["doYouBelongToGreek"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-        if profile["shareYourNationalSocialFraternityMembership"]:
-            organizations = profile["shareYourNationalSocialFraternityMembership"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["nameYourNationalSocialFraternityIfNotInList"]:
-            organizations = profile["nameYourNationalSocialFraternityIfNotInList"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourNationalSocialSororityMembership"]:
-            organizations = profile["yourNationalSocialSororityMembership"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["nameYourNationalSocialSororityIfNotInList"]:
-            organizations = profile["nameYourNationalSocialSororityIfNotInList"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourNationalFraternityAssociations"]:
-            organizations = profile["yourNationalFraternityAssociations"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourNationalFraternityAssociationIfNotInList"]:
-            organizations = profile["yourNationalFraternityAssociationIfNotInList"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourNationalOrganizationsMembership"]:
-            organizations = profile["yourNationalOrganizationsMembership"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["YourOtherNationalOrganizationWhichYouCannotFind"]:
-            organizations = profile["YourOtherNationalOrganizationWhichYouCannotFind"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-                
-        if profile["menSportsTeam"]:
-            organizations = profile["menSportsTeam"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-                
-        if profile["womenSportsTeam"]:
-            organizations = profile["womenSportsTeam"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourMenSportsTeamIfNotInList"]:
-            organizations = profile["yourMenSportsTeamIfNotInList"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-        if profile["yourWomenSportsTeamIfNotInList"]:
-            organizations = profile["yourWomenSportsTeamIfNotInList"].split("\n")
-            for org in organizations:
-                organization.append({
-                    "name": org,
-                    "iconURL": "Organization icon URL",
-                    "accountURL": "Organization account URL"
-                })
-                
-                
+        organization_fields = [
+            "doYouBelongToGreek",
+            "shareYourNationalSocialFraternityMembership",
+            "nameYourNationalSocialFraternityIfNotInList",
+            "yourNationalSocialSororityMembership",
+            "nameYourNationalSocialSororityIfNotInList",
+            "yourNationalFraternityAssociations",
+            "yourNationalFraternityAssociationIfNotInList",
+            "yourNationalOrganizationsMembership",
+            "YourOtherNationalOrganizationWhichYouCannotFind",
+            "menSportsTeam",
+            "womenSportsTeam",
+            "yourMenSportsTeamIfNotInList",
+            "yourWomenSportsTeamIfNotInList"
+        ]
+
+        for field in organization_fields:
+            if profile.get(field):
+                organizations = profile[field].split("\n")
+                for org in organizations:
+                    organization.append({
+                        "name": org,
+                        "iconURL": "Organization icon URL",
+                        "accountURL": "Organization account URL"
+                    })
+
         formatted_profile["organisation"] = organization
 
-        
         local_organization = []
-        if profile["includeTwelveStudentclubsToWhichYouBelong"]:
+        if profile.get("includeTwelveStudentclubsToWhichYouBelong"):
             student_clubs = profile["includeTwelveStudentclubsToWhichYouBelong"].split("\n")
             for club in student_clubs:
                 parts = club.split("Position (if any):")
@@ -211,384 +120,241 @@ def format_profiles(profiles):
 
         formatted_profile["localOrganisation"] = local_organization
 
-        formatted_profiles.append(formatted_profile)
-        
-        
         social_media_icons = []
-        if profile["yourOwnWebsite"]:
-            social_media_icons.append({
-                "platform": "yourOwnWebsite",
-                "iconUrl": "yourOwnWebsite icon URL",
-                "url": profile["yourOwnWebsite"]
-            })
-        
-        if profile["yourBlog"]:
-            social_media_icons.append({
-                "platform": "yourBlog",
-                "iconUrl": "yourBlog icon URL",
-                "url": profile["yourBlog"]
-            })
-            
-        if profile["LinkedIn"]:
-            social_media_icons.append({
-                "platform": "LinkedIn",
-                "iconUrl": "LinkedIn icon URL",
-                "url": profile["LinkedIn"]
-            })
-            
-        if profile["Instagram"]:
-            social_media_icons.append({
-                "platform": "Instagram",
-                "iconUrl": "Instagram icon URL",
-                "url": profile["Instagram"]
-            })
-            
-            
-        if profile["Twitter"]:
-            social_media_icons.append({
-                "platform": "Twitter",
-                "iconUrl": "Twitter icon URL",
-                "url": profile["Twitter"]
-            })
-            
-        if profile["Facebook"]:
-            social_media_icons.append({
-                "platform": "Facebook",
-                "iconUrl": "Facebook icon URL",
-                "url": profile["Facebook"]
-            })
-            
-            
-        if profile["GooglePlus"]:
-            social_media_icons.append({
-                "platform": "GooglePlus",
-                "iconUrl": "GooglePlus icon URL",
-                "url": profile["GooglePlus"]
-            })
-            
-        if profile["Pinterest"]:
-            social_media_icons.append({
-                "platform": "Pinterest",
-                "iconUrl": "Pinterest icon URL",
-                "url": profile["Pinterest"]
-            })
-            
-        if profile["Youtube"]:
-            social_media_icons.append({
-                "platform": "Youtube",
-                "iconUrl": "Youtube icon URL",
-                "url": profile["Youtube"]
-            })
-            
-        if profile["Flickr"]:
-            social_media_icons.append({
-                "platform": "Flickr",
-                "iconUrl": "Flickr icon URL",
-                "url": profile["Flickr"]
-            })
-            
-        if profile["Behance"]:
-            social_media_icons.append({
-                "platform": "Behance",
-                "iconUrl": "Behance icon URL",
-                "url": profile["Behance"]
-            })
-            
-        if profile["Tumblr"]:
-            social_media_icons.append({
-                "platform": "Tumblr",
-                "iconUrl": "Tumblr icon URL",
-                "url": profile["Tumblr"]
-            })
-            
-        if profile["Etsy"]:
-            social_media_icons.append({
-                "platform": "Etsy",
-                "iconUrl": "Etsy icon URL",
-                "url": profile["Etsy"]
-            })
-            
-        if profile["WayUp"]:
-            social_media_icons.append({
-                "platform": "WayUp",
-                "iconUrl": "WayUp icon URL",
-                "url": profile["WayUp"]
-            })
-            
-        if profile["academiaEdu"]:
-            social_media_icons.append({
-                "platform": "academiaEdu",
-                "iconUrl": "academiaEdu icon URL",
-                "url": profile["academiaEdu"]
-            })
-            
-        if profile["Researchgate"]:
-            social_media_icons.append({
-                "platform": "Researchgate",
-                "iconUrl": "Researchgate icon URL",
-                "url": profile["Researchgate"]
-            })
-            
-        if profile["Digication"]:
-            social_media_icons.append({
-                "platform": "Digication",
-                "iconUrl": "Digication icon URL",
-                "url": profile["Digication"]
-            })
-            
-        if profile["Issuu"]:
-            social_media_icons.append({
-                "platform": "Issuu",
-                "iconUrl": "Issuu icon URL",
-                "url": profile["Issuu"]
-            })
-            
-        if profile["VSCO"]:
-            social_media_icons.append({
-                "platform": "VSCO",
-                "iconUrl": "VSCO icon URL",
-                "url": profile["VSCO"]
-            })
-            
-        if profile["500px"]:
-            social_media_icons.append({
-                "platform": "500px",
-                "iconUrl": "500px icon URL",
-                "url": profile["500px"]
-            })
-            
-        if profile["helperHelper"]:
-            social_media_icons.append({
-                "platform": "helperHelper",
-                "iconUrl": "helperHelper icon URL",
-                "url": profile["helperHelper"]
-            })
-            
-        if profile["Github"]:
-            social_media_icons.append({
-                "platform": "Github",
-                "iconUrl": "Github icon URL",
-                "url": profile["Github"]
-            })
-            
-        if profile["projectsThatMatterorg"]:
-            social_media_icons.append({
-                "platform": "projectsThatMatterorg",
-                "iconUrl": "projectsThatMatterorg icon URL",
-                "url": profile["projectsThatMatterorg"]
-            })
-            
-        if profile["Quora"]:
-            social_media_icons.append({
-                "platform": "Quora",
-                "iconUrl": "Quora icon URL",
-                "url": profile["Quora"]
-            })
-            
-        if profile["TikTok"]:
-            social_media_icons.append({
-                "platform": "TikTok",
-                "iconUrl": "TikTok icon URL",
-                "url": profile["TikTok"]
-            })
-            
-        if profile["Strava"]:
-            social_media_icons.append({
-                "platform": "Strava",
-                "iconUrl": "Strava icon URL",
-                "url": profile["Strava"]
-            })
-            
-        if profile["sportsRecruits"]:
-            social_media_icons.append({
-                "platform": "sportsRecruits",
-                "iconUrl": "sportsRecruits icon URL",
-                "url": profile["sportsRecruits"]
-            })
-            
-        if profile["mileSplit"]:
-            social_media_icons.append({
-                "platform": "mileSplit",
-                "iconUrl": "mileSplit icon URL",
-                "url": profile["mileSplit"]
-            })
-            
-        if profile["prestoSports"]:
-            social_media_icons.append({
-                "platform": "prestoSports",
-                "iconUrl": "prestoSports icon URL",
-                "url": profile["prestoSports"]
-            })
-            
-        if profile["Harri"]:
-            social_media_icons.append({
-                "platform": "Harri",
-                "iconUrl": "Harri icon URL",
-                "url": profile["Harri"]
-            })
-            
-        if profile["eliteProspects"]:
-            social_media_icons.append({
-                "platform": "eliteProspects",
-                "iconUrl": "eliteProspects icon URL",
-                "url": profile["eliteProspects"]
-            })
-        
-        if profile["Hudl"]:
-            social_media_icons.append({
-                "platform": "Hudl",
-                "iconUrl": "Hudl icon URL",
-                "url": profile["Hudl"]
-            })
-            
-        if profile["maxPreps"]:
-            social_media_icons.append({
-                "platform": "maxPreps",
-                "iconUrl": "maxPreps icon URL",
-                "url": profile["maxPreps"]
-            })
-            
-        if profile["NCSA"]:
-            social_media_icons.append({
-                "platform": "NCSA",
-                "iconUrl": "NCSA icon URL",
-                "url": profile["NCSA"]
-            })
-            
-        if profile["athleticNet"]:
-            social_media_icons.append({
-                "platform": "athleticNet",
-                "iconUrl": "athleticNet icon URL",
-                "url": profile["athleticNet"]
-            })
-            
-            
-        if profile["medium"]:
-            social_media_icons.append({
-                "platform": "medium",
-                "iconUrl": "medium icon URL",
-                "url": profile["medium"]
-            })
-            
-        if profile["twitch"]:
-            social_media_icons.append({
-                "platform": "twitch",
-                "iconUrl": "twitch icon URL",
-                "url": profile["twitch"]
-            })
-            
-        if profile["soundCloud"]:
-            social_media_icons.append({
-                "platform": "soundCloud",
-                "iconUrl": "soundCloud icon URL",
-                "url": profile["soundCloud"]
-            })
-            
-        if profile["artStation"]:
-            social_media_icons.append({
-                "platform": "artStation",
-                "iconUrl": "artStation icon URL",
-                "url": profile["artStation"]
-            })
-            
-        if profile["firstRobotics"]:
-            social_media_icons.append({
-                "platform": "firstRobotics",
-                "iconUrl": "firstRobotics icon URL",
-                "url": profile["firstRobotics"]
-            })
-            
-        if profile["Patreon"]:
-            social_media_icons.append({
-                "platform": "Patreon",
-                "iconUrl": "Patreon icon URL",
-                "url": profile["Patreon"]
-            })
-            
-            
-        if profile["soundClick"]:
-            social_media_icons.append({
-                "platform": "soundClick",
-                "iconUrl": "soundClick icon URL",
-                "url": profile["soundClick"]
-            })
-            
-        if profile["bandcamp"]:
-            social_media_icons.append({
-                "platform": "bandcamp",
-                "iconUrl": "bandcamp icon URL",
-                "url": profile["bandcamp"]
-            })
-            
-        if profile["vexRobotics"]:
-            social_media_icons.append({
-                "platform": "vexRobotics",
-                "iconUrl": "vexRobotics icon URL",
-                "url": profile["vexRobotics"]
-            })
-            
-            
-        if profile["Rivals"]:
-            social_media_icons.append({
-                "platform": "Rivals",
-                "iconUrl": "Rivals icon URL",
-                "url": profile["Rivals"]
-            })
-            
-            
-        if profile["swimCloud"]:
-            social_media_icons.append({
-                "platform": "swimCloud",
-                "iconUrl": "swimCloud icon URL",
-                "url": profile["swimCloud"]
-            })
+
+        social_media_fields = [
+            "yourOwnWebsite",
+            "yourBlog",
+            "LinkedIn",
+            "Instagram",
+            "Twitter",
+            "Facebook",
+            "GooglePlus",
+            "Pinterest",
+            "Youtube",
+            "Flickr",
+            "Behance",
+            "Tumblr",
+            "Etsy",
+            "WayUp",
+            "academiaEdu",
+            "Researchgate",
+            "Digication",
+            "Issuu",
+            "VSCO",
+            "500px",
+            "helperHelper",
+            "Github",
+            "projectsThatMatterorg",
+            "Quora",
+            "TikTok",
+            "Strava",
+            "sportsRecruits",
+            "mileSplit",
+            "prestoSports",
+            "Harri",
+            "eliteProspects",
+            "Hudl",
+            "maxPreps",
+            "NCSA",
+            "athleticNet",
+            "medium",
+            "twitch",
+            "soundCloud",
+            "artStation",
+            "firstRobotics",
+            "Patreon",
+            "soundClick",
+            "bandcamp",
+            "vexRobotics",
+            "Rivals",
+            "swimCloud"
+        ]
+
+        for field in social_media_fields:
+            if profile.get(field):
+                social_media_icons.append({
+                    "platform": field,
+                    "iconUrl": f"{field} icon URL",
+                    "url": profile[field]
+                })
 
         formatted_profile["socialMediaIcons"] = social_media_icons
 
+        formatted_profiles.append(formatted_profile)
+
     return formatted_profiles
 
-       
+
+ # Define a context manager for getting database connections from the pool
+class DBConnection:
+    def __enter__(self):
+        self.db_connection = connection_pool.get_connection()
+        return self.db_connection
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.db_connection:
+            self.db_connection.close()      
 
 @app.route('/api/profiles', methods=['GET'])
 def get_profiles():
-    cursor = db_connection.cursor(dictionary=True)
     try:
-        query = "SELECT * FROM Wordpress_profile"
-        cursor.execute(query)
-        profiles = cursor.fetchall()
+        with DBConnection() as db_connection:
+            cursor = db_connection.cursor(dictionary=True)
+            query = "SELECT * FROM Wordpress_profile"
+            cursor.execute(query)
+            profiles = cursor.fetchall()
+
+        formatted_profiles = format_profiles(profiles)
+        response_data = json.dumps(formatted_profiles, indent=2)
+        return Response(response_data, content_type='application/json')
+
     except Exception as e:
-        response = Response({"error":e}, content_type='application/json')
-    finally:
-        cursor.close()
-        
-    formatted_profiles = format_profiles(profiles)
-    response_data = json.dumps(formatted_profiles, indent=2)
-    response = Response(response_data, content_type='application/json')
-    
-    return response
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/profile/<uniqueId>', methods=['GET'])
 def get_profile(uniqueId):
-    cursor = db_connection.cursor(dictionary=True)
     try:
-        query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
-        cursor.execute(query, (uniqueId,))
-        profile = cursor.fetchone()
+        with DBConnection() as db_connection:
+            cursor = db_connection.cursor(dictionary=True)
+            query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
+            cursor.execute(query, (uniqueId,))
+            profile = cursor.fetchone()
+
+        if profile:
+            formatted_profile = format_profiles([profile])[0]
+            response_data = json.dumps(formatted_profile, indent=2)
+            return Response(response_data, content_type='application/json')
+        else:
+            return "Profile not found", 404
+
     except Exception as e:
-        return "Error occured", 501
-    finally:
-        cursor.close()
-        
-    if profile:
-        formatted_profile = format_profiles([profile])[0]
-        response_data = json.dumps(formatted_profile, indent=2)
-        response = Response(response_data, content_type='application/json')
-        return response
-    else:
-        return "Profile not found", 404
+        return jsonify({"error": str(e)}), 500
 
+@app.route('/api/profile/<uniqueId>', methods=['PUT'])
+def update_profile(uniqueId):
+    try:
+        data = request.get_json()
 
+        if not data:
+            return "Invalid JSON data", 400
 
+        with DBConnection() as db_connection:
+            cursor = db_connection.cursor(dictionary=True)
+
+            # Check if the profile with the given uniqueId exists
+            check_query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
+            cursor.execute(check_query, (uniqueId,))
+            existing_profile = cursor.fetchone()
+
+            if not existing_profile:
+                return "Profile not found", 404
+
+            # Prepare the UPDATE query dynamically
+            update_query = "UPDATE Wordpress_profile SET "
+            update_values = []
+
+            for key, value in data.items():
+                if key != "uniqueId":
+                    update_query += f"`{key}` = %s, "  # Use backticks to handle special characters
+                    update_values.append(value)
+
+            # Remove the trailing comma and space from the query
+            update_query = update_query.rstrip(', ')
+
+            update_query += " WHERE uniqueId = %s"
+            update_values.append(uniqueId)
+
+            cursor.execute(update_query, update_values)
+            db_connection.commit()
+
+        return "Profile updated successfully", 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/profile', methods=['POST'])
+def create_profile():
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
+
+        with DBConnection() as db_connection:
+            cursor = db_connection.cursor(dictionary=True)
+
+            # Insert the new profile data into the database
+            insert_query = """
+                INSERT INTO Wordpress_profile (
+                    uniqueId, firstName, middleName, lastName, orderNumber, emailUsed, birthDate, bannerPhoto, 
+                    usOrCanadianOrInternationalSchool, cannotFindSchoolPleaseProvideIt, Degree, graduationYear,
+                    usUndergradSchool, aboutMe, myAcademics, myExtracurricularActivities, myAthletics, myPlansForFuture,
+                    myJobsInternships, mySkills, myLanguages, myHonorsAwards, favoriteBook, favoriteQuote, 
+                    favoriteCharitableCauses, regionsAndCharitableNeedsICareAbout, metropolitanAreasWhoseCharitableNeedsICareAbout,
+                    ethnicGroupsWhoseCharitableNeedsICareAbout, religiousGroupsWhoseCharitableNeedsICareAbout,
+                    howMyLifestyleIsMakingtheWorldBetterPlace, `favoriteNonprofitOrganizations.`, volunteeringCommunityService,
+                    myFundraisingActivities, charitableWishlists, doYouBelongToGreek, shareYourNationalSocialFraternityMembership,
+                    nameYourNationalSocialFraternityIfNotInList, yourNationalSocialSororityMembership,
+                    nameYourNationalSocialSororityIfNotInList, yourNationalFraternityAssociations,
+                    yourNationalFraternityAssociationIfNotInList, yourNationalOrganizationsMembership,
+                    YourOtherNationalOrganizationWhichYouCannotFind, menSportsTeam, womenSportsTeam,
+                    yourMenSportsTeamIfNotInList, yourWomenSportsTeamIfNotInList, includeTwelveStudentclubsToWhichYouBelong,
+                    yourOwnWebsite, yourBlog, LinkedIn, Instagram, Twitter, Facebook, GooglePlus, Pinterest, Youtube, Flickr, Behance,
+                    Tumblr, Etsy, WayUp, academiaEdu, Researchgate, Digication, Issuu, VSCO, 500px, helperHelper, Github,
+                    projectsThatMatterorg, Quora, TikTok, Strava, sportsRecruits, mileSplit, prestoSports, Harri,
+                    eliteProspects, Hudl, maxPreps, NCSA, athleticNet, medium, twitch, soundCloud, artStation, firstRobotics,
+                    Patreon, soundClick, bandcamp, vexRobotics, Rivals, myThoughtsOnMakingaDifference, swimCloud, placesIHaveLived,
+                    placesIHaveTraveled, myFavoritePodcasts, newUniqueId, id
+                ) VALUES (
+                    %(uniqueId)s, %(firstName)s, %(middleName)s, %(lastName)s, %(orderNumber)s, %(emailUsed)s, %(birthDate)s,
+                    %(bannerPhoto)s, %(usOrCanadianOrInternationalSchool)s, %(cannotFindSchoolPleaseProvideIt)s, %(Degree)s,
+                    %(graduationYear)s, %(usUndergradSchool)s, %(aboutMe)s, %(myAcademics)s, %(myExtracurricularActivities)s,
+                    %(myAthletics)s, %(myPlansForFuture)s, %(myJobsInternships)s, %(mySkills)s, %(myLanguages)s,
+                    %(myHonorsAwards)s, %(favoriteBook)s, %(favoriteQuote)s, %(favoriteCharitableCauses)s,
+                    %(regionsAndCharitableNeedsICareAbout)s, %(metropolitanAreasWhoseCharitableNeedsICareAbout)s,
+                    %(ethnicGroupsWhoseCharitableNeedsICareAbout)s, %(religiousGroupsWhoseCharitableNeedsICareAbout)s,
+                    %(howMyLifestyleIsMakingtheWorldBetterPlace)s, %(favoriteNonprofitOrganizations.)s, %(volunteeringCommunityService)s,
+                    %(myFundraisingActivities)s, %(charitableWishlists)s, %(doYouBelongToGreek)s, %(shareYourNationalSocialFraternityMembership)s,
+                    %(nameYourNationalSocialFraternityIfNotInList)s, %(yourNationalSocialSororityMembership)s,
+                    %(nameYourNationalSocialSororityIfNotInList)s, %(yourNationalFraternityAssociations)s,
+                    %(yourNationalFraternityAssociationIfNotInList)s, %(yourNationalOrganizationsMembership)s,
+                    %(YourOtherNationalOrganizationWhichYouCannotFind)s, %(menSportsTeam)s, %(womenSportsTeam)s,
+                    %(yourMenSportsTeamIfNotInList)s, %(yourWomenSportsTeamIfNotInList)s,
+                    %(includeTwelveStudentclubsToWhichYouBelong)s, %(yourOwnWebsite)s, %(yourBlog)s, %(LinkedIn)s, %(Instagram)s,
+                    %(Twitter)s, %(Facebook)s, %(GooglePlus)s, %(Pinterest)s, %(Youtube)s, %(Flickr)s, %(Behance)s, %(Tumblr)s,
+                    %(Etsy)s, %(WayUp)s, %(academiaEdu)s, %(Researchgate)s, %(Digication)s, %(Issuu)s, %(VSCO)s, %(500px)s, %(helperHelper)s,
+                    %(Github)s, %(projectsThatMatterorg)s, %(Quora)s, %(TikTok)s, %(Strava)s, %(sportsRecruits)s, %(mileSplit)s,
+                    %(prestoSports)s, %(Harri)s, %(eliteProspects)s, %(Hudl)s, %(maxPreps)s, %(NCSA)s, %(athleticNet)s, %(medium)s,
+                    %(twitch)s, %(soundCloud)s, %(artStation)s, %(firstRobotics)s, %(Patreon)s, %(soundClick)s, %(bandcamp)s,
+                    %(vexRobotics)s, %(Rivals)s, %(myThoughtsOnMakingaDifference)s, %(swimCloud)s, %(placesIHaveLived)s,
+                    %(placesIHaveTraveled)s, %(myFavoritePodcasts)s, %(newUniqueId)s, %(id)s
+                )
+            """
+
+            cursor.execute(insert_query, data)
+            db_connection.commit()
+
+        return "Profile created successfully", 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/profile/<uniqueId>', methods=['DELETE'])
+def delete_profile(uniqueId):
+    try:
+        with DBConnection() as db_connection:
+            cursor = db_connection.cursor()
+            query = "DELETE FROM Wordpress_profile WHERE uniqueId = %s"
+            cursor.execute(query, (uniqueId,))
+            db_connection.commit()
+
+        return "Profile deleted successfully", 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+ 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
