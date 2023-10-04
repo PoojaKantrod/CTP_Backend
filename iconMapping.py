@@ -44,8 +44,12 @@ socialMediaAndOrganizationIconMap = {
     "soundClick":"profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-SoundClick.png?v=86814259793349226601661879653",
     "bandcamp":"profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-Bandcamp.png?v=13886352921775169951661879648",
     "vexRobotics":"profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-VexRobotics.png?v=174964471377120121821661879655",
-    "swimCloud":"profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-SwimCloud.png?v=127702362665711943401661879654"
+    "swimCloud":"profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-SwimCloud.png?v=127702362665711943401661879654",
+    "defaultSocialMediaIcon": "profilesforhumanity.org/cdn/shop/t/2/assets/round-icon-Website.png?v=181891691508174651511661879655"
 }
 
 def getIconUrl(key):
-    return socialMediaAndOrganizationIconMap[key]
+    if key in socialMediaAndOrganizationIconMap:
+        return socialMediaAndOrganizationIconMap[key]
+    else:
+        return socialMediaAndOrganizationIconMap["defaultSocialMediaIcon"]
