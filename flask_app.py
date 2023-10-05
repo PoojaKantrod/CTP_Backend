@@ -1,7 +1,8 @@
 from flask import Flask, Response, request, jsonify
-import mysql.connector
 import json
 import os
+
+from iconMapping import getIconUrl
 from dotenv import load_dotenv
 from mysql.connector import pooling
 load_dotenv()
@@ -175,7 +176,7 @@ def format_profiles(profiles):
             if profile.get(field):
                 social_media_icons.append({
                     "platform": field,
-                    "iconUrl": f"{field} icon URL",
+                    "iconUrl": getIconUrl(field),
                     "url": profile[field]
                 })
 
@@ -194,7 +195,7 @@ class DBConnection:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.db_connection:
-            self.db_connection.close()      
+            self.db_connection.close()    
 
 @app.route('/api/profiles', methods=['GET'])
 def get_profiles():
