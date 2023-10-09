@@ -6,6 +6,16 @@ from models import Wordpress_profile
 
 from iconMapping import getIconUrl
 from dotenv import load_dotenv
+from mysql.connector import pooling
+import pathlib
+import requests
+from flask import Flask, session, abort, redirect, request
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
+import google.auth.transport.requests
+import logging
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -318,6 +328,81 @@ def delete_profile(uniqueId):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
- 
+
+# Google OAUTH Configuration 
+logging.basicConfig(level=logging.DEBUG)  
+logger = logging.getLogger(__name__)
+
+app.secret_key = "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"  
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  
+
+GOOGLE_CLIENT_ID = "701134778327-hlh7dm5iuphaq85h13gu3e3hppgodgqo.apps.googleusercontent.com"
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=client_secrets_file,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri="http://localhost/callback"
+)
+
+def login_is_required(function):
+    def wrapper(*args, **kwargs):
+        if "google_id" not in session:
+            return abort(401)  
+        else:
+            return function()
+    return wrapper
+
+@app.route("/login-button")
+def login():
+    authorization_url, state = flow.authorization_url()
+    session["state"] = state  
+    return redirect(authorization_url)
+
+@app.route("/callback")
+def callback():
+    try:
+        flow.fetch_token(authorization_response=request.url)
+        logger.debug("Fetched token successfully: %s", flow.credentials.token)  # Log the token
+
+        request_session = requests.session()
+        cached_session = cachecontrol.CacheControl(request_session)
+        token_request = google.auth.transport.requests.Request(session=cached_session)
+
+        id_info = id_token.verify_oauth2_token(
+            id_token=flow.credentials._id_token,
+            request=token_request,
+            audience=GOOGLE_CLIENT_ID
+        )
+
+        logger.debug("ID Token details: %s", id_info)  
+
+        session["google_id"] = id_info.get("sub")
+        session["name"] = id_info.get("name")
+
+    except google.auth.exceptions.InvalidValue as e:
+        logger.error("Token validation failed: %s", e)  
+        return "Token has expired. Please <a href='/login'>login again</a>."
+    except Exception as e:  
+        logger.error("An error occurred: %s", e)
+        return "An error occurred. Please try again."
+
+    return redirect("/protected_area")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+@app.route("/login")
+def index():
+    return "Hello World <a href='/login-button'><button>Login</button></a>"
+
+@app.route("/protected_area")
+@login_is_required
+def protected_area():
+    return f"Hello {session['name']}! <br/> <a href='/logout'><button>Logout</button></a>"
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)
