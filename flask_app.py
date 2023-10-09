@@ -4,6 +4,10 @@ from iconMapping import getIconUrl
 from database import DBConnection
 from models import Wordpress_profile
 
+from iconMapping import getIconUrl
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
 
 @app.errorhandler(404)
