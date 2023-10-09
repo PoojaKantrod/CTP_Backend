@@ -1,75 +1,14 @@
-from flask import Flask, Response, request, jsonify
 import json
-import os
-
-from functools import wraps
-import jwt
-from flask import request, abort
-from flask import current_app
-import models
-
+from flask import Flask, Response, request, jsonify
 from iconMapping import getIconUrl
-from dotenv import load_dotenv
-from mysql.connector import pooling
-load_dotenv()
+from database import DBConnection
+from models import Wordpress_profile
 
 app = Flask(__name__)
-
-db_host = os.environ.get("DB_HOST")
-db_port = os.environ.get("DB_PORT")
-db_user = os.environ.get("DB_USER")
-db_password = os.environ.get("DB_PASSWORD")
-db_database = os.environ.get("DB_DATABASE")
-
-# Create a connection pool
-connection_pool = pooling.MySQLConnectionPool(
-    pool_name="mypool",
-    pool_size=10,
-    host=db_host,
-    port=db_port,
-    user=db_user,
-    password=db_password,
-    database=db_database,
-    auth_plugin='mysql_native_password'
-)
 
 @app.errorhandler(404)
 def page_not_found(error):
     return "invalid request", 404
-
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        if "Authorization" in request.headers:
-            token = request.headers["Authorization"].split(" ")[1]
-        if not token:
-            return {
-                "message": "Authentication Token is missing!",
-                "data": None,
-                "error": "Unauthorized"
-            }, 401
-        try:
-            data=jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
-            current_user=models.User().get_by_id(data["user_id"])
-            if current_user is None:
-                return {
-                "message": "Invalid Authentication token!",
-                "data": None,
-                "error": "Unauthorized"
-            }, 401
-            if not current_user["active"]:
-                abort(403)
-        except Exception as e:
-            return {
-                "message": "Something went wrong",
-                "data": None,
-                "error": str(e)
-            }, 500
-
-        return f(current_user, *args, **kwargs)
-
-    return decorated
 
 def format_profiles(profiles):
     formatted_profiles = []
@@ -88,32 +27,32 @@ def format_profiles(profiles):
         "cannotFindSchoolPleaseProvideIt": "cannotFindSchoolPleaseProvideIt",
         "Degree": "Degree",
         "graduationYear": "graduationYear",
-            "usUndergradSchool":"usUndergradSchool",
-            "aboutMe": "aboutMe",
-            "myAcademics": "myAcademics",
-            "myExtracurricularActivities":"myExtracurricularActivities",
-            "myAthletics": "myAthletics",
-            "myPlansForFuture": "myPlansForFuture",
-            "myJobsInternships": "myJobsInternships",
-            "mySkills": "mySkills",
-            "myLanguages": "myLanguages",
-            "myHonorsAwards": "myHonorsAwards",
-            "favoriteBook": "favoriteBook",
-            "favoriteQuote": "favoriteQuote",
-            "favoriteCharitableCauses": "favoriteCharitableCauses",
-            "regionsAndCharitableNeedsICareAbout": "regionsAndCharitableNeedsICareAbout",
-            "metropolitanAreasWhoseCharitableNeedsICareAbout": "metropolitanAreasWhoseCharitableNeedsICareAbout",
-            "ethnicGroupsWhoseCharitableNeedsICareAbout": "ethnicGroupsWhoseCharitableNeedsICareAbout",
-            "religiousGroupsWhoseCharitableNeedsICareAbout":"religiousGroupsWhoseCharitableNeedsICareAbout",
-            "howMyLifestyleIsMakingtheWorldBetterPlace": "howMyLifestyleIsMakingtheWorldBetterPlace",
-            "favoriteNonprofitOrganizations.": "favoriteNonprofitOrganizations.",
-            "volunteeringCommunityService": "volunteeringCommunityService",
-            "myFundraisingActivities": "myFundraisingActivities",
-            "charitableWishlists": "charitableWishlists",
-            "myThoughtsOnMakingaDifference": "myThoughtsOnMakingaDifference",
-            "placesIHaveLived": "placesIHaveLived",
-            "placesIHaveTraveled": "placesIHaveTraveled",
-            "myFavoritePodcasts": "myFavoritePodcasts",
+        "usUndergradSchool":"usUndergradSchool",
+        "aboutMe": "aboutMe",
+        "myAcademics": "myAcademics",
+        "myExtracurricularActivities":"myExtracurricularActivities",
+        "myAthletics": "myAthletics",
+        "myPlansForFuture": "myPlansForFuture",
+        "myJobsInternships": "myJobsInternships",
+        "mySkills": "mySkills",
+        "myLanguages": "myLanguages",
+        "myHonorsAwards": "myHonorsAwards",
+        "favoriteBook": "favoriteBook",
+        "favoriteQuote": "favoriteQuote",
+        "favoriteCharitableCauses": "favoriteCharitableCauses",
+        "regionsAndCharitableNeedsICareAbout": "regionsAndCharitableNeedsICareAbout",
+        "metropolitanAreasWhoseCharitableNeedsICareAbout": "metropolitanAreasWhoseCharitableNeedsICareAbout",
+        "ethnicGroupsWhoseCharitableNeedsICareAbout": "ethnicGroupsWhoseCharitableNeedsICareAbout",
+        "religiousGroupsWhoseCharitableNeedsICareAbout":"religiousGroupsWhoseCharitableNeedsICareAbout",
+        "howMyLifestyleIsMakingtheWorldBetterPlace": "howMyLifestyleIsMakingtheWorldBetterPlace",
+        "favoriteNonprofitOrganizations.": "favoriteNonprofitOrganizations.",
+        "volunteeringCommunityService": "volunteeringCommunityService",
+        "myFundraisingActivities": "myFundraisingActivities",
+        "charitableWishlists": "charitableWishlists",
+        "myThoughtsOnMakingaDifference": "myThoughtsOnMakingaDifference",
+        "placesIHaveLived": "placesIHaveLived",
+        "placesIHaveTraveled": "placesIHaveTraveled",
+        "myFavoritePodcasts": "myFavoritePodcasts",
     }
 
     for profile in profiles:
@@ -224,28 +163,12 @@ def format_profiles(profiles):
 
         formatted_profiles.append(formatted_profile)
 
-    return formatted_profiles
-
-
- # Define a context manager for getting database connections from the pool
-class DBConnection:
-    def __enter__(self):
-        self.db_connection = connection_pool.get_connection()
-        return self.db_connection
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.db_connection:
-            self.db_connection.close()    
+    return formatted_profiles   
 
 @app.route('/api/profiles', methods=['GET'])
 def get_profiles():
     try:
-        with DBConnection() as db_connection:
-            cursor = db_connection.cursor(dictionary=True)
-            query = "SELECT * FROM Wordpress_profile"
-            cursor.execute(query)
-            profiles = cursor.fetchall()
-
+        profiles = Wordpress_profile().get_all_profiles()
         formatted_profiles = format_profiles(profiles)
         response_data = json.dumps(formatted_profiles, indent=2)
         return Response(response_data, content_type='application/json')
@@ -257,12 +180,7 @@ def get_profiles():
 @app.route('/api/profile/<uniqueId>', methods=['GET'])
 def get_profile(uniqueId):
     try:
-        with DBConnection() as db_connection:
-            cursor = db_connection.cursor(dictionary=True)
-            query = "SELECT * FROM Wordpress_profile WHERE uniqueId = %s"
-            cursor.execute(query, (uniqueId,))
-            profile = cursor.fetchone()
-
+        profile = Wordpress_profile().get_by_id(uniqueId)
         if profile:
             formatted_profile = format_profiles([profile])[0]
             response_data = json.dumps(formatted_profile, indent=2)
