@@ -1,1 +1,1 @@
-import Wordpress_profile
+import models.Wordpress_profile

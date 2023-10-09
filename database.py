@@ -1,23 +1,14 @@
-import os
-from dotenv import load_dotenv
-import mysql.connector
 from mysql.connector import pooling
-load_dotenv()
-
-db_host = os.environ.get("DB_HOST")
-db_port = os.environ.get("DB_PORT")
-db_user = os.environ.get("DB_USER")
-db_password = os.environ.get("DB_PASSWORD")
-db_database = os.environ.get("DB_DATABASE")
+from config import Config
 
 connection_pool = pooling.MySQLConnectionPool(
     pool_name="mypool",
     pool_size=10,
-    host=db_host,
-    port=db_port,
-    user=db_user,
-    password=db_password,
-    database=db_database,
+    host=Config.DB_HOST,
+    port=Config.DB_PORT,
+    user=Config.DB_USER,
+    password=Config.DB_PASSWORD,
+    database=Config.DB_DATABASE,
     auth_plugin='mysql_native_password'
 )
 

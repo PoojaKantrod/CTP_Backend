@@ -8,6 +8,7 @@ Gitignore/
 Reference_Repo/
 Jupyter/data/
 loc.txt
+client_secret.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
