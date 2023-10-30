@@ -1,17 +1,21 @@
 from flask import Flask, Response, request, jsonify
-import mysql.connector
+#imports for cognito
+from flask_cognito_lib import CognitoAuth
+from flask_cognito_lib.decorators import (
+    auth_required,
+    cognito_login,
+    cognito_login_callback,
+    cognito_logout,
+)
+from flask_cors import CORS
 import json
 import os
 from dotenv import load_dotenv
 from mysql.connector import pooling
-import pathlib
-import requests
 from flask import Flask, session, abort, redirect, request
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
-import google.auth.transport.requests
-import logging
 
 load_dotenv()
 
@@ -34,7 +38,27 @@ connection_pool = pooling.MySQLConnectionPool(
     database=db_database,
     auth_plugin='mysql_native_password'
 )
+ #added for cognito details 
+# Configuration required for CognitoAuth
+app.config["AWS_REGION"]=os.environ.get("AWS_REGION")
+app.config["AWS_COGNITO_USER_POOL_ID"] =os.environ.get("AWS_COGNITO_USER_POOL_ID")
+app.config["AWS_COGNITO_DOMAIN"]= os.environ.get("AWS_COGNITO_DOMAIN")
+app.config["AWS_COGNITO_USER_POOL_CLIENT_ID"] =os.environ.get("AWS_COGNITO_USER_POOL_CLIENT_ID")
+app.config["AWS_COGNITO_USER_POOL_CLIENT_SECRET"] =os.environ.get("AWS_COGNITO_USER_POOL_CLIENT_SECRET")
+app.config["AWS_COGNITO_REDIRECT_URL"] = os.environ.get("AWS_COGNITO_REDIRECT_URL")
+app.config["AWS_COGNITO_LOGOUT_URL"]= os.environ.get("AWS_COGNITO_LOGOUT_URL")
 
+
+# app.config["AWS_REGION"] = "us-east-2"
+# app.config["AWS_COGNITO_USER_POOL_ID"] = "us-east-2_awNCF5k9A"
+# app.config["AWS_COGNITO_DOMAIN"] = "https://ctpbackend.auth.us-east-2.amazoncognito.com"
+# app.config["AWS_COGNITO_USER_POOL_CLIENT_ID"] = "53a307pmr0pajipnpjpie0ue72"
+# app.config["AWS_COGNITO_USER_POOL_CLIENT_SECRET"] = "1os86h0fl0ir5mvffoi0umted2mqae572cgdh5slboc2g76vjirm"
+# app.config["AWS_COGNITO_REDIRECT_URL"] = "http://localhost/callback"
+# app.config["AWS_COGNITO_LOGOUT_URL"] = "http://localhost/login"
+
+
+auth = CognitoAuth(app)
 @app.errorhandler(404)
 def page_not_found(error):
     return "invalid request", 404
@@ -206,6 +230,7 @@ class DBConnection:
             self.db_connection.close()      
 
 @app.route('/api/profiles', methods=['GET'])
+@auth_required()
 def get_profiles():
     try:
         with DBConnection() as db_connection:
@@ -223,6 +248,7 @@ def get_profiles():
 
 
 @app.route('/api/profile/<uniqueId>', methods=['GET'])
+@auth_required()
 def get_profile(uniqueId):
     try:
         with DBConnection() as db_connection:
@@ -242,6 +268,7 @@ def get_profile(uniqueId):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/profile/<uniqueId>', methods=['PUT'])
+@auth_required()
 def update_profile(uniqueId):
     try:
         data = request.get_json()
@@ -284,6 +311,7 @@ def update_profile(uniqueId):
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/profile', methods=['POST'])
+@auth_required()
 def create_profile():
     try:
         data = request.get_json()
@@ -351,6 +379,7 @@ def create_profile():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/profile/<uniqueId>', methods=['DELETE'])
+@auth_required()
 def delete_profile(uniqueId):
     try:
         with DBConnection() as db_connection:
@@ -365,80 +394,29 @@ def delete_profile(uniqueId):
         return jsonify({"error": str(e)}), 500
 
 
-# Google OAUTH Configuration 
-logging.basicConfig(level=logging.DEBUG)  
-logger = logging.getLogger(__name__)
-
-app.secret_key = "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"  
-
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  
-
-GOOGLE_CLIENT_ID = "701134778327-hlh7dm5iuphaq85h13gu3e3hppgodgqo.apps.googleusercontent.com"
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
-
-flow = Flow.from_client_secrets_file(
-    client_secrets_file=client_secrets_file,
-    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://localhost/callback"
-)
-
-def login_is_required(function):
-    def wrapper(*args, **kwargs):
-        if "google_id" not in session:
-            return abort(401)  
-        else:
-            return function()
-    return wrapper
-
-@app.route("/login-button")
-def login():
-    authorization_url, state = flow.authorization_url()
-    session["state"] = state  
-    return redirect(authorization_url)
+app.secret_key = os.environ.get("secret_key")
 
 @app.route("/callback")
+@cognito_login_callback
 def callback():
-    try:
-        flow.fetch_token(authorization_response=request.url)
-        logger.debug("Fetched token successfully: %s", flow.credentials.token)  # Log the token
-
-        request_session = requests.session()
-        cached_session = cachecontrol.CacheControl(request_session)
-        token_request = google.auth.transport.requests.Request(session=cached_session)
-
-        id_info = id_token.verify_oauth2_token(
-            id_token=flow.credentials._id_token,
-            request=token_request,
-            audience=GOOGLE_CLIENT_ID
-        )
-
-        logger.debug("ID Token details: %s", id_info)  
-
-        session["google_id"] = id_info.get("sub")
-        session["name"] = id_info.get("name")
-
-    except google.auth.exceptions.InvalidValue as e:
-        logger.error("Token validation failed: %s", e)  
-        return "Token has expired. Please <a href='/login'>login again</a>."
-    except Exception as e:  
-        logger.error("An error occurred: %s", e)
-        return "An error occurred. Please try again."
-
     return redirect("/protected_area")
 
 @app.route("/logout")
+@cognito_logout
 def logout():
-    session.clear()
+   # session.clear()
     return redirect("/login")
 
 @app.route("/login")
+@cognito_login
 def index():
     return "Hello World <a href='/login-button'><button>Login</button></a>"
 
 @app.route("/protected_area")
-@login_is_required
+@auth_required()
 def protected_area():
-    return f"Hello {session['name']}! <br/> <a href='/logout'><button>Logout</button></a>"
+    # return f"Hello {session['name']}! <br/> <a href='/logout'><button>Logout</button></a>"
+    return f"Hello! <br/> <a href='/logout'><button>Logout</button></a>"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
