@@ -155,7 +155,4 @@ AND table_name = 'Wordpress_profile'
 AND column_name = 'orderNumber';
 
 
-
-
-
-
+select * from cleaned_data;
