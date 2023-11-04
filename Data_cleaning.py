@@ -37,7 +37,7 @@ def generate_order_number(email):
     else:
         order_number = f'#{last_Order_number}'
         last_order_number += 1
-        return Order_number
+        return order_number
     
 # Generate default order numbers for rows with empty 'Order_number' column
 raw_data['Order_number'] = raw_data.apply(lambda row: generate_default_order_number(row.name) if pd.isna(row['Order_number']) else row['Order_number'], axis=1)
