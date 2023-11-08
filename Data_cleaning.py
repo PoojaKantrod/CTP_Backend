@@ -210,7 +210,7 @@ raw_data.rename(columns=column_mapping, inplace=True)
 
 # List of columns to exclude from special character removal
 exclude_columns = [
-    'uniqueId', 'orderNumber', 'emailUsed', 'birthDate', 'bannerPhoto',
+    'uniqueId', 'orderNumber', 'emailUsed', 'birthDate', 'bannerPhoto', 'yourOwnWebsite','yourBlog', 'charitableWishlists',
     'LinkedIn', 'Instagram', 'Twitter', 'Facebook', 'GooglePlus',
     'Pinterest', 'Youtube', 'Flickr', 'Behance', 'Tumblr', 'Etsy',
     'WayUp', 'academiaEdu', 'Researchgate', 'Digication', 'Issuu', 'VSCO',
