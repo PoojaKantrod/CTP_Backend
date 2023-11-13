@@ -43,7 +43,7 @@ You can access the API using the following endpoints:
 - http://192.168.1.11:5000/api/profile/Infl-college-student-0000280
 - For adding a new record use http://192.168.1.11:5000/api/profile and put the json data from file `api_post_data.json` in body section.
   
-## Use authentication via Postman to run access the endpoints 
+## Use authentication via Postman to access the endpoints 
 - Get the json file from team member for importing the collection in postman.
 - Select `CTP Backend` after importing the json file. 
 - Scroll down and click on `Get New Access Token` .
