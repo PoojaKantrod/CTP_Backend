@@ -8,6 +8,8 @@ Gitignore/
 Reference_Repo/
 Jupyter/data/
 loc.txt
+.vscode
+CTP Backend.postman_collection.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
