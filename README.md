@@ -41,4 +41,11 @@ You can access the API using the following endpoints:
 - http://192.168.1.11:5000/api/profiles
 - To access the data of a specific student, use the following URL pattern, replacing `Infl-college-student-0000280` with the student's identifier:
 - http://192.168.1.11:5000/api/profile/Infl-college-student-0000280
+- For adding a new record use http://192.168.1.11:5000/api/profile and put the json data from file `api_post_data.json` in body section.
   
+## Use authentication via Postman to access the endpoints 
+- Get the json file from team member for importing the collection in postman.
+- Select `CTP Backend` after importing the json file. 
+- Scroll down and click on `Get New Access Token` .
+- Login in with cognito using credentials created for authentication. Once the token is generated rename it as `access_token`.
+ - Now try running all the endpoints under the collection as mentioned in the above section <b>API EndPoints</b>. 
