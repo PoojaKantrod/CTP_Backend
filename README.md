@@ -48,4 +48,5 @@ You can access the API using the following endpoints:
 - Select `CTP Backend` after importing the json file. 
 - Scroll down and click on `Get New Access Token` .
 - Login in with cognito using credentials created for authentication. Once the token is generated rename it as `access_token`.
- - Now try running all the endpoints under the collection as mentioned in the above section <b>API EndPoints</b>. 
+- Once this is done, under the API endpoints replace the cookie cognito_access_token with new token in `Cookies` [can be found under the send button] section. 
+- Now try running all the endpoints under the collection as mentioned in the above section <b>API EndPoints</b>. 
