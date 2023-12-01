@@ -4,6 +4,8 @@
 
 In the `MySQL_Database` folder, you'll find mock databases and tables, including a `wordpress_profile` table.
 
+# Application Setup Guide
+
 ## Setting up Conda
 Run enviroment.yml file using following command to setup conda for this project.
 ``` 
@@ -23,15 +25,59 @@ cp .env.example .env
 
 Please go to .env file and add you local configuration or db server config if you have that.
 
+
+## Data Cleaning
+
+1. Execute the data cleaning script to generate a cleaned CSV file:
+
+    ```bash
+    python Data_cleaning.py
+    ```
+
+    This will create a file named `cleaned_data.csv`.
+
+2. Access your MySQL database:
+
+    ```bash
+    mysql -u root -p
+    ```
+
+    Enter your password when prompted.
+
+3. Switch to the `mock_data` database:
+
+    ```sql
+    use mock_data;
+    ```
+
+4. Verify the successful loading of cleaned data:
+
+    ```sql
+    SELECT degree FROM cleaned_data;
+    ```
+
+    Note: Replace "degree" with the desired field for verification.
+
 ## Running the Flask Application
 
-To use the Flask application for creating an API for student profiles, follow these steps:
+1. Install Flask:
 
-1. Install Flask by running the following command in your command prompt or terminal:
-  
-2. Install the MySQL connector for Python using the following command:
+    ```bash
+    pip install Flask
+    ```
 
-3. Run the `flask_app.py` script. This script establishes a connection to the database using Flask and creates an API for student profile information.
+2. Install the MySQL connector for Python:
+
+    ```bash
+    pip install mysql-connector-python
+    ```
+
+3. Run the Flask application:
+
+    ```bash
+    python flask_app.py
+    ```
+    
 
 ## API Endpoints
 
@@ -49,5 +95,5 @@ You can access the API using the following endpoints:
 - Scroll down and click on `Get New Access Token` .
 - Login in with cognito using credentials created for authentication. Once the token is generated rename it as `access_token`.
 - Once this is done, under the API endpoints replace the value of cookie cognito_access_token with new token in Cookies [can be found under the send button] section.
-- Now try running all the endpoints under the collection as mentioned in the above section <b>API EndPoints</b>.
-- Get the json file from team member for importing the collection in postman.
+- Once this is done, under the API endpoints replace the cookie cognito_access_token with new token in `Cookies` [can be found under the send button] section. 
+- Now try running all the endpoints under the collection as mentioned in the above section <b>API EndPoints</b>. 
