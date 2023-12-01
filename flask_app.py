@@ -17,8 +17,6 @@ import os
 from dotenv import load_dotenv
 from mysql.connector import pooling
 from flask import Flask, session, abort, redirect, request
-from google.oauth2 import id_token
-from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 import secrets
 import json

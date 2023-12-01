@@ -1,15 +1,9 @@
 name: ctpbackend
 channels:
   - defaults
-  - conda-forge
 dependencies:
   - pip
-  - flask
-  - mysql-connector-python
   - python-dotenv
-  - pyjwt
-  - google-auth
-  - google-api-python-client
-  - google-auth-httplib2
-  - google-auth-oauthlib
-prefix: /Users/kunjshah/opt/anaconda3/envs/ctpbackend
+  - mysql-connector-python
+  - flask
+prefix: /Users/maithilikalkar/anaconda3/envs/ctpbackend
